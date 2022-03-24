@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= h(application_name) %></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="pinterest" content="nopin" />
+    <meta name="format-detection" content="telephone=no">
+
+    <script type="text/javascript">
+      // The relative links to assets won't be found if the app was mounted under a path but
+      // the request comes in without a trailing slash.
+      if (!window.location.pathname.endsWith("/")) {
+        window.location.pathname = window.location.pathname + "/";
+      }
+    </script>
+
+    <link rel="stylesheet" href="assets/nice-select2-2.0.0/nice-select2.min.css">
+    <link rel="stylesheet" href="assets/flatpickr-4.6.9/flatpickr.min.css">
+    <style type="text/css">
+      <%= render "styles.css" %>
+    </style>
+
+    <script type="text/javascript" src="assets/nice-select2-2.0.0/nice-select2.min.js"></script>
+    <script type="text/javascript" src="assets/flatpickr-4.6.9/flatpickr.min.js"></script>
+    <script type="text/javascript" src="<%= h(SpartanAPM.plotly_js_url) %>"></script>
+    <script>
+      <%= render "scripts.js" %>
+    </script>
+  </head>
+
+  <body data-authentication-url="<%= h(authentication_url) %>">
+    <header>
+      <div class="dates">
+        <span id="start-time" class="nowrap"></span>
+        <span class="hide-xs">-</span>
+        <span id="end-time" class="nowrap"></span>
+      </div>
+      <div class="help-btn">
+        <a href="#" id="help">&#9432;</a>
+      </div>
+      <h1>
+        <% if application_url %>
+          <a href="<%= h(application_url) %>"><%= h(application_name) %></a>
+        <% else %>
+          <%= h(application_name) %>
+        <% end %>
+      </h1>
+    </header>
+
+    <div class="container">
+      <nav>
+        <% if environments.size > 1 %>
+          <select id="env" size="1" title="Environment">
+            <% environments.each_with_index do |env, index| %>
+              <option <%= "selected" if index == 0%>><%= h(env) %></option>
+            <% end %>
+          </select>
+        <% else %>
+          <input id="env" type="hidden">
+        <% end %>
+
+        <% if apps.size > 1 %>
+          <select id="app" size="1" title="App">
+            <% apps.each_with_index do |app, index| %>
+              <option <%= "selected" if index == 0%>><%= h(app) %></option>
+            <% end %>
+          </select>
+        <% else %>
+          <input id="app" type="hidden">
+        <% end %>
+
+        <select id="host" size="1" data-searchable="true" title="Host">
+          <option value="" selected>All hosts</option>
+        </select>
+
+        <select id="action" size="1" data-searchable="true" title="Action">
+          <option value="" selected>All actions</option>
+        </select>
+
+        <span class="nowrap">
+          <select id="minutes" size="1" title="Minutes">
+            <option value="15">15 minutes</option>
+            <option value="30" selected>30 minutes</option>
+            <option value="60">60 minutes</option>
+            <option value="120">2 hours</option>
+            <option value="180">3 hours</option>
+            <option value="240">4 hours</option>
+            <option value="360">6 hours</option>
+            <option value="720">12 hours</option>
+            <option value="1440">24 hours</option>
+            <option value="2880">2 days</option>
+            <option value="4320">3 days</option>
+            <option value="10080">7 days</option>
+            <option value="20160">14 days</option>
+            <option value="43200">30 days</option>
+            <option value="86400">60 days</option>
+            <option value="129600">90 days</option>
+            <option value="259200">180 days</option>
+            <option value="525600">365 days</option>
+          </select>
+        </span>
+
+        <span class="nowrap">
+          <input type="datetime-local" id="time" class="form-control" value="" title="Select start time or leave blank to see current time" placeholder="Start time">
+
+          <span id="live-checkbox">
+            <input type="checkbox" value="1" id="live">
+            <label for="live">Live</label>
+          </span>
+          &nbsp;
+        </span>
+
+        <span class="nowrap">
+          <button type="button" class="btn" id="update-charts" title="refresh">
+            <svg viewBox="0 0 32 32" width="20" height="20">
+              <path d=" M16 2 A14 14 0 0 0 2 16 A14 14 0 0 0 16 30 A14 14 0 0 0 26 26 L 23.25 23 A10 10 0 0 1 16 26 A10 10 0 0 1 6 16 A10 10 0 0 1 16 6 A10 10 0 0 1 23.25 9 L19 13 L30 13 L30 2 L26 6 A14 14 0 0 0 16 2 ">
+            </svg>
+          </button>
+          <button type="button" class="btn" id="previous" disabled title="Previous">
+            &#8678;
+          </button>
+          <button type="button" class="btn" id="next" disabled title="Next">
+            &#8680;
+          </button>
+        </span>
+      </nav>
+
+      <div id="alert"></div>
+
+      <div id="loading-spinner" class="push-up spinner"></div>
+
+      <div id="charts" class="hidden">
+        <h2 class="text-center text-normal">
+          Request Time
+
+          <small class="nowrap">
+            (<span id="interval-minutes"></span> increments, <span id="avg-request-time"></span>ms average)
+          </small>
+
+          <small class="nowrap">
+            &nbsp;
+            <select id="measurement" size="1" title="Measurement">
+              <option value="avg" selected>average</option>
+              <option value="p50">average p50</option>
+              <option value="p90">average p90</option>
+              <option value="p99">average p99</option>
+            </select>
+            &nbsp;
+          </small>
+        </h2>
+        <div id="request-timing"></div>
+
+        <hr>
+
+        <h2 class="text-center text-normal">
+          Throughput
+          <small>(<span id="avg-requests-per-minute"></span> rpm average)</small>
+        </h2>
+        <div id="throughput"></div>
+
+        <hr>
+
+        <div class="flex-container">
+          <div class="flex-item">
+            <h2 class="text-center text-normal">
+              Error Rate
+              <small>(<span id="avg-error-rate"></span> average)</small>
+            </h2>
+            <div id="error-rate"></div>
+          </div>
+
+          <div class="flex-item">
+            <h2 class="text-center text-normal">
+              Errors
+              <small>(<span id="avg-errors-per-minute"></span> / minute average)</small>
+            </h2>
+            <div id="error-count"></div>
+          </div>
+        </div>
+
+        <div class="text-center">
+        </div>
+
+        <div id="error-details" class="push-up hidden">
+          <table id="error-table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Error</th>
+                <th>Count</th>
+                <th>Stacktrace</th>
+            </thead>
+            <tbody>
+          </table>
+        </div>
+
+        <div id="action-details" class="push-up hidden">
+          <h2 class="text-center text-normal">
+            Top Actions
+            <small>(% total time spent)</small>
+          </h2>
+          <div id="action-load"></div>
+        </div>
+
+        <div id="details-loading-spinner" class="push-up hidden spinner"></div>
+
+        <div class="text-center">
+          <button type="button" class="btn push-up" id="show-error-details">Show Error Details</button>
+          <button type="button" class="btn push-up" id="show-action-details">Show Action Details</button>
+          <button type="button" class="btn push-up" id="download-data">Download Data</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal" class="js-close-modal" aria-hidden="true" aria-role="dialog">
+      <div class="modal-dialog">
+        <button type="button" title="Close Dialog" class="modal-close js-close-modal">&times;</button>
+        <div class="modal-content">
+          <%= render "_help.html.erb" %>
+        </div>
+      </div>
+    </div>
+
+    <template id="error-table-row" class="hidden">
+      <tr>
+        <td class="error-class-name"></td>
+        <td class="text-right error-count"></td>
+        <td class="error-backtrace"></td>
+      </tr>
+    </template>
+  </body>
+</html>

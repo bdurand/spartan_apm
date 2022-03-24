@@ -1,0 +1,147 @@
+<h3>Controls</h3>
+
+<dl>
+  <dd>Interval</dd>
+  <dt>
+    <p>
+      The interval menu controls the time interval to display in the graphs. The precision
+      of the graphs is determined by the interval. Some features are not available
+      when the interval is over 12 hours.
+    </p>
+    <p>
+      You can also control the interval by clicking and dragging on a graph to highlight a section
+      of the graph to zoom in on.
+    </p>
+  </dt>
+
+  <dd>Start Time</dd>
+  <dt>
+    <p>
+      The start time can be set to control when the interval being shown starts at.
+      If the start time is left blank, then it will be calculated as the most recent interval
+      (i.e. if the interval is 30 minutes, the graphs will show the last 30 minutes).
+    </p>
+  </dt>
+
+  <dd>Live</dd>
+  <dt>
+    <p>
+      If the live checkbox is checked, then the server will be polled every few seconds for
+      update to the graphs. Live updates are only available if the interval is an hour or less.
+    </p>
+  </dt>
+
+  <dd>Host</dd>
+  <dt>
+    <p>
+      The host menu can be used to filter the graphs for just specific hosts. It can be used
+      to narrow down if any anonmalies are isolated to a specific host or not.
+    </p>
+  </dt>
+
+  <dd>Action</dd>
+  <dt>
+    <p>
+      The action menu can be used to filter the graphs for just specific actions. It can be used
+      to narrow down if any anonmalies are isolated to a specific host or not. Only the top 100
+      actions are shown.
+    </p>
+  </dt>
+
+  <dd>App (optional)</dd>
+  <dt>
+    <p>
+      The app menu can be used to switch between different apps that are being monitored.
+    </p>
+    <p>
+      The app menu will not appear if there is only one app being monitored.
+    </p>
+  </dt>
+
+  <dd>Environment (optional)</dd>
+  <dt>
+    <p>
+      The environment menu can be used to switch between different environments that are being monitored.
+    </p>
+    <p>
+      The environment menu will not appear if there is only one environment being monitored.
+    </p>
+  </dt>
+
+  <dd>Refresh</dd>
+  <dt>
+    <p>
+      You can use the refresh button to refresh the graphs.
+    </p>
+  </dt>
+
+  <dd>Pagination</dd>
+  <dt>
+    <p>
+      You can use the pagination (arrow) buttons to navigate forward and backward from the
+      current start time.
+    </p>
+  </dt>
+</dl>
+
+<hr>
+
+<h3>Request Time</h3>
+
+<p>
+  The request time graph shows a detailed breakdown of how time was spent on average processing
+  each request. You can use the request metric menu to switch which metric you want to see.
+</p>
+
+<p>
+  If you choose to see the average time, then the graph is broken down by component so you can
+  see where the application is spending most of the request time.
+</p>
+
+<p>
+  You can also choose to see the p50, p90, or p99 metrics for response time. Due to the way that
+  data is stored, these are not true p50, p90, and p99 values. Rather they are an average of those
+  values over each process reporting data and then further averaged over the time frame. This should
+  be accurate enough for most purposes. However, you could get different values if you gather these
+  metrics from another source
+</p>
+
+<hr>
+
+<h3>Throughput</h3>
+
+<p>
+  The throughput graph shows the number of requests per minute processed by the application.
+</p>
+
+<hr>
+
+<h3>Errors</h3>
+
+<p>
+  Errors are show in three different displays. You can see the error rate which is the number of errors
+  encountered per request as well as the total number of errors. Both of these are show graphed over time.
+</p>
+
+<p>
+  You can also click the <strong>Show Error Details</strong> button to show a table with all the errors
+  that were encountered over the time range along with their stack traces.
+</p>
+
+<hr>
+
+<h3>Action Details</h3>
+
+<p>
+  Clicking the <strong>Show Action Details</strong> button will show an additional graph that breaks down
+  the top 25 actions that are taking up the most wall clock time to execute. This information can be
+  used to detect hot spots in the code that can provide a benefit from optimization.
+</p>
+
+<hr>
+
+<h3>Download Data</h3>
+
+<p>
+  You can download the current data being displayed as a CSV file by clicking the <strong>Download Data</strong> button.
+</p>

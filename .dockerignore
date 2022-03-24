@@ -1,0 +1,9 @@
+.*
+coverage/
+gemfiles/
+public/
+sample_data/
+spec/
+Appraisals
+Gemfile
+Gemfile.lock
