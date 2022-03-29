@@ -7,7 +7,7 @@ require_relative "lib/spartan_apm"
 if SpartanAPM.apps.empty?
   raise ArgumentError.new("Apps must be specified in comma delimited list in the SPARTAN_APM environment variable")
 else
-  puts "Using apps #{SpartanAPM.apps.join(', ')} in environments #{SpartanAPM.environments.join(', ')}"
+  puts "Using apps #{SpartanAPM.apps.join(", ")} in environments #{SpartanAPM.environments.join(", ")}"
 end
 
 # Make sure we don't log access tokens.

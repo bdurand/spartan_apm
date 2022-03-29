@@ -475,6 +475,18 @@ module SpartanAPM
       uniq_hosts.to_a.sort
     end
 
+    def average_process_count(time_range, host: nil)
+      count = 0.0
+      bucket_count = 0
+      each_bucket(time_range) do |bucket|
+        bucket_count += 1
+        read_host_data(bucket, nil, host) do |hostname, data|
+          count += data.size
+        end
+      end
+      (count / bucket_count).round
+    end
+
     def clear!(time_range)
       clear_minute_stats!(time_range)
       clear_hourly_stats!(time_range)
@@ -591,18 +603,11 @@ module SpartanAPM
     end
 
     def read_range(time_range, action, host)
-      redis = SpartanAPM.redis
       each_bucket(time_range) do |bucket|
-        key = redis_key(action, bucket)
-        host_data = redis.hgetall(key)
-
-        next if host_data.empty?
-
-        host_values = (host ? Array(host_data[host]) : host_data.values)
-
+        hosts = Set.new
         combined_data = {}
-        host_values.each do |packed_data|
-          data = MessagePack.load(packed_data)
+        read_host_data(bucket, action, host) do |hostname, data|
+          hosts << hostname
           data.each do |name, values|
             combined_values = combined_data[name]
             unless combined_values
@@ -613,7 +618,20 @@ module SpartanAPM
           end
         end
 
-        yield(bucket, combined_data, host_data.keys)
+        unless combined_data.empty?
+          yield(bucket, combined_data, hosts)
+        end
+      end
+    end
+
+    def read_host_data(bucket, action, host)
+      redis = SpartanAPM.redis
+      key = redis_key(action, bucket)
+      host_data = (host ? {host => redis.hget(key, host)} : redis.hgetall(key))
+      host_data.each do |hostname, packed_data|
+        next if packed_data.nil?
+        data = MessagePack.load(packed_data)
+        yield(hostname, data)
       end
     end
 

@@ -98,8 +98,8 @@ describe SpartanAPM::Persistence do
         expect(web_1_partial_metrics.collect(&:time)).to eq [Time.at(bucket_2 * 60), Time.at(bucket_3 * 60)]
         expect(web_1_partial_metrics.collect(&:count)).to eq [101, 101]
 
-        expect(web_1_testhost_2_metrics.collect(&:time)).to eq [Time.at(bucket_1 * 60), Time.at(bucket_2 * 60), Time.at(bucket_3 * 60)]
-        expect(web_1_testhost_2_metrics.collect(&:count)).to eq [202, nil, nil]
+        expect(web_1_testhost_2_metrics.collect(&:time)).to eq [Time.at(bucket_1 * 60)]
+        expect(web_1_testhost_2_metrics.collect(&:count)).to eq [202]
       ensure
         web.clear!([time - 120, time])
         async.clear!([time - 120, time])
@@ -237,6 +237,10 @@ describe SpartanAPM::Persistence do
         SpartanAPM::Persistence.new("app").clear!(time)
       end
     end
+  end
+
+  describe "average_process_count" do
+    it "should return the average number of processes reporting during a time range"
   end
 
   describe "errors" do
