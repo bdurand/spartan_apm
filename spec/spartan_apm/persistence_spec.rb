@@ -240,7 +240,30 @@ describe SpartanAPM::Persistence do
   end
 
   describe "average_process_count" do
-    it "should return the average number of processes reporting during a time range"
+    it "should return the average number of processes reporting during a time range" do
+      time = Time.now
+      app = SpartanAPM::Persistence.new("app")
+      begin
+        measure = SpartanAPM::Measure.new("app", "action")
+        measure.timers["test"] = 2.0
+        SpartanAPM::Persistence.store!(SpartanAPM.bucket(time), [measure, measure, measure])
+        SpartanAPM::Persistence.store!(SpartanAPM.bucket(time), [measure, measure])
+        SpartanAPM::Persistence.store!(SpartanAPM.bucket(time), [measure])
+        SpartanAPM::Persistence.store!(SpartanAPM.bucket(time + 60), [measure])
+        allow(SpartanAPM).to receive(:host).and_return("testhost_2")
+        SpartanAPM::Persistence.store!(SpartanAPM.bucket(time), [measure])
+        SpartanAPM::Persistence.store!(SpartanAPM.bucket(time + 60), [measure])
+        expect(app.average_process_count([time, time + 60])).to eq 3
+        expect(app.average_process_count([time, time + 120])).to eq 3
+        expect(app.average_process_count(time)).to eq 4
+        expect(app.average_process_count(time + 60)).to eq 2
+        expect(app.average_process_count(time + 120)).to eq 0
+        expect(app.average_process_count(time, host: "testhost_2")).to eq 1
+      ensure
+        app.clear!([time, time + 60])
+        app.clear!([time, time + 60])
+      end
+    end
   end
 
   describe "errors" do

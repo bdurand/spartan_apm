@@ -35,6 +35,9 @@ module SpartanAPM
 
     MAX_KEEP_AGGREGATED_STATS = 365 * 24 * 60 * 60
 
+    # Key used to store aggregated values for all components
+    ALL_COMPONENTS = "."
+
     class << self
       def store!(bucket, measures)
         store_measure_stats(bucket, measures)
@@ -152,14 +155,14 @@ module SpartanAPM
         p90 = (total_times[(total_times.size * 0.90).floor] * 1000).round
         p99 = (total_times[(total_times.size * 0.99).floor] * 1000).round
         errors = (error_count / SpartanAPM.sample_rate).round
-        stats["."] = [count, time, p50, p90, p99, errors]
+        stats[ALL_COMPONENTS] = [count, time, p50, p90, p99, errors]
 
         stats
       end
 
       def store_metric(bucket, app, action, host, data)
         script_keys = [redis_key(SpartanAPM.env, app, action, bucket), actions_key(SpartanAPM.env, app, bucket)]
-        script_args = [action, host, JSON.dump(data), data["."][1], SpartanAPM.ttl]
+        script_args = [action, host, JSON.dump(data), data[ALL_COMPONENTS][1], SpartanAPM.ttl]
         eval_script(STORE_STATS_SCRIPT, script_keys, script_args)
       end
 
@@ -360,7 +363,7 @@ module SpartanAPM
       def truncate_actions!(app, bucket)
         action_key = actions_key(SpartanAPM.env, app, bucket)
         min_used_actions = SpartanAPM.redis.zrevrange(action_key, SpartanAPM.max_actions + 1, -1)
-        min_used_actions.delete(".")
+        min_used_actions.delete(ALL_COMPONENTS)
         return if min_used_actions.empty?
         min_used_actions.each do |action|
           SpartanAPM.redis.multi do |transaction|
@@ -475,16 +478,22 @@ module SpartanAPM
       uniq_hosts.to_a.sort
     end
 
+    # Return the average number of processes reporting data during the time range.
+    # You can use this data in a custom monitor to determine process counts by host.
+    # @param time_range [Time, Enumerable<Time>] The time range to process.
+    # @param host [String] Optional host name to filter on.
+    # @return [Integer]
     def average_process_count(time_range, host: nil)
-      count = 0.0
-      bucket_count = 0
+      bucket_counts = []
       each_bucket(time_range) do |bucket|
-        bucket_count += 1
+        count = 0
         read_host_data(bucket, nil, host) do |hostname, data|
-          count += data.size
+          count += data[ALL_COMPONENTS].size
         end
+        bucket_counts << count if count > 0
       end
-      (count / bucket_count).round
+      return 0 if bucket_counts.empty?
+      (bucket_counts.sum.to_f / bucket_counts.size).round
     end
 
     def clear!(time_range)
@@ -498,7 +507,7 @@ module SpartanAPM
       each_bucket(time_range) do |bucket|
         action_key = actions_key(bucket)
         actions = redis.zrevrange(action_key, 0, 1_000_000)
-        keys = (actions + ["."]).collect { |action| redis_key(action, bucket) }
+        keys = (actions + [ALL_COMPONENTS]).collect { |action| redis_key(action, bucket) }
         redis.del(keys + [action_key, errors_key(bucket)])
       end
     end
@@ -554,7 +563,7 @@ module SpartanAPM
     def metric_from_values(bucket, combined_data)
       metric = Metric.new(SpartanAPM.bucket_time(bucket))
 
-      totals = combined_data.delete(".")
+      totals = combined_data.delete(ALL_COMPONENTS)
       return metric if totals.nil?
 
       metric.count = totals.sum(&:first) if totals
