@@ -251,7 +251,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const layout = {
       barmode: "stack",
       xaxis: {
-        tickformat: "%I:%M%p\n%b %e, %Y"
+        tickformat: "%I:%M%p\n%b %e, %Y",
+        fixedrange: !zoomGraphsEnabled
       },
       yaxis: {
         title: measurement + " ms",
@@ -283,7 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const layout = {
       xaxis: {
-        tickformat: "%I:%M%p\n%b %e, %Y"
+        tickformat: "%I:%M%p\n%b %e, %Y",
+        fixedrange: !zoomGraphsEnabled
       },
       yaxis: {
         title: "Request / Minute",
@@ -314,7 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const layout = {
       xaxis: {
-        tickformat: "%I:%M%p\n%b %e, %Y"
+        tickformat: "%I:%M%p\n%b %e, %Y",
+        fixedrange: !zoomGraphsEnabled
       },
       yaxis: {
         title: "Errors",
@@ -346,7 +349,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const layout = {
       xaxis: {
-        tickformat: "%I:%M%p\n%b %e, %Y"
+        tickformat: "%I:%M%p\n%b %e, %Y",
+        fixedrange: !zoomGraphsEnabled
       },
       yaxis: {
         tickformat: ".3%",
@@ -885,12 +889,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("popstate", initializeSettings);
 
+  // Enable zooming into graphs only on non touch devices
+  window.addEventListener('mouseover', function onFirstHover() {
+    zoomGraphsEnabled = true;
+    window.removeEventListener('mouseover', onFirstHover, false);
+    document.querySelectorAll(".zoomable-chart").forEach((div) => {
+      Plotly.relayout(div, {"xaxis.fixedrange": false});
+    });
+  }, false);
+
   // Initialize the application
   let metricData = null;
   let errorData = null;
   let actionData = null;
   let liveUpdateId = null;
   let currentParams = null;
+  let zoomGraphsEnabled = false;
 
   const select2Menus = {}
   document.querySelectorAll("select").forEach((select) => {
