@@ -348,7 +348,14 @@ module SpartanAPM
     # @return [Array<String>]
     def hosts
       load_metrics
-      @hosts.sort
+      @host_summaries.keys.sort
+    end
+
+    # Get a summary report of metrics broken down by host.
+    # @return [Hash<String, Hash<String, Integer>>]
+    def host_summaries
+      load_metrics
+      @host_summaries
     end
 
     # Get the list of component names that reported metrics during the report time range.
@@ -366,21 +373,21 @@ module SpartanAPM
       metrics_map = {}
       names = Set.new
       metrics = nil
-      hosts = []
+      host_summaries = {}
       persistence = Persistence.new(app, env: env)
       if interval_minutes >= 60 * 24
         metrics = persistence.daily_metrics([start_time, end_time])
       elsif interval_minutes >= 60
         metrics = persistence.hourly_metrics([start_time, end_time])
       else
-        metrics, hosts = persistence.report_info([start_time, end_time], host: host, action: action)
+        metrics, host_summaries = persistence.report_info([start_time, end_time], host: host, action: action)
       end
       metrics.each do |metric|
         metric.component_names.each { |n| names << n }
         metrics_map[metric.time] = metric
       end
       @names = names.to_a.freeze
-      @hosts = hosts.sort.freeze
+      @host_summaries = host_summaries.freeze
       @metrics = metrics_map
     end
 

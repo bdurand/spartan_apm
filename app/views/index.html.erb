@@ -189,7 +189,7 @@
                 <th>Count</th>
                 <th>Stacktrace</th>
             </thead>
-            <tbody>
+            <tbody></tbody>
           </table>
         </div>
 
@@ -201,11 +201,26 @@
           <div id="action-load"></div>
         </div>
 
+        <div id="host-summaries" class="push-up hidden">
+          <table id="host-summaries-table" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Host</th>
+                <th class="text-right">Requests</th>
+                <th class="text-right">Errors</th>
+                <th class="text-right">Error Rate</th>
+                <th class="text-right">Average Time</th>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
         <div id="details-loading-spinner" class="push-up hidden spinner"></div>
 
         <div class="text-center">
           <button type="button" class="btn push-up" id="show-error-details">Show Error Details</button>
           <button type="button" class="btn push-up" id="show-action-details">Show Action Details</button>
+          <button type="button" class="btn push-up" id="show-host-summaries">Show Host Summaries</button>
           <button type="button" class="btn push-up" id="download-data">Download Data</button>
         </div>
       </div>
@@ -225,6 +240,16 @@
         <td class="error-class-name"></td>
         <td class="text-right error-count"></td>
         <td class="error-backtrace"></td>
+      </tr>
+    </template>
+
+    <template id="host-summary-row" class="hidden">
+      <tr>
+        <td class="host-name"></td>
+        <td class="text-right request-count"></td>
+        <td class="text-right error-count"></td>
+        <td class="text-right error-rate"></td>
+        <td class="text-right request-time"></td>
       </tr>
     </template>
   </body>

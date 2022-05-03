@@ -89,6 +89,12 @@ module SpartanAPM
         }
       end
 
+      # Response for /actions
+      def hosts
+        report = create_report
+        report.host_summaries
+      end
+
       private
 
       def param(name, default: nil)

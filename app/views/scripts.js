@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update all charts on the page.
   function updateCharts(updateLocation) {
-    const selectedHost = param("host");
     const charts = document.getElementById("charts");
     const minutes = parseInt(selectedValue(document.getElementById("minutes")), 10);
     const hostMenu = document.getElementById("host");
@@ -39,16 +38,20 @@ document.addEventListener("DOMContentLoaded", () => {
       select2Menus["action"].enable();
     }
 
-    document.getElementById("show-error-details").style.display = (selectedHost || aggregated ? "none" : null);
-    document.getElementById("error-details").style.display = "none";
-    document.getElementById("show-action-details").style.display = (selectedHost || aggregated ? "none" : null);
-    document.getElementById("action-details").style.display = "none";
-
     if (updateLocation !== false) {
       updateWindowLocation();
     }
 
-    currentParams = selectedParams()
+    const selectedHost = param("host");;
+
+    document.getElementById("show-error-details").style.display = (selectedHost || aggregated ? "none" : null);
+    document.getElementById("error-details").style.display = "none";
+    document.getElementById("show-action-details").style.display = (selectedHost || aggregated ? "none" : null);
+    document.getElementById("action-details").style.display = "none";
+    document.getElementById("show-host-summaries").style.display = (selectedHost || aggregated ? "none" : null);
+    document.getElementById("host-summaries").style.display = "none";
+
+    currentParams = selectedParams();
     callAPI("metrics", currentParams, "loading-spinner", (data) => {
       charts.style.display = "block";
       updateMetricData(data);
@@ -109,8 +112,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Update the charts that are based on metrics data.
   function updateMetricData(data) {
-    setMenuOptions("host", data.hosts);
-    setMenuOptions("action", data.actions);
+    const hostMenu = document.getElementById("host");
+    if (hostMenu.selectedIndex == 0) {
+      setMenuOptions("host", data.hosts);
+    }
+
+    const actionMenu = document.getElementById("action");
+    if (actionMenu.selectedIndex == 0) {
+      setMenuOptions("action", data.actions);
+    }
 
     for (let i = 0; i < data.times.length; i++) {
       data.times[i] = new Date(data.times[i]);
@@ -429,6 +439,26 @@ document.addEventListener("DOMContentLoaded", () => {
         div.innerText = line;
         backtrace.append(div);
       })
+      tbody.append(row);
+    });
+  }
+
+  // Show host summary information in a table.
+  function showHostSummaries() {
+    const rowTemplate = document.getElementById("host-summary-row");
+    const tbody = document.getElementById("host-summaries-table").querySelector("tbody");
+    tbody.innerHTML = "";
+    const sortedSummaries = Object.entries(hostSummaryData).sort((a, b) => { return a[0].localeCompare(b[0]) });
+    sortedSummaries.forEach(([host, data]) => {
+      const template = document.createElement('template');
+      template.innerHTML = rowTemplate.innerHTML.trim();
+      const row = template.content.firstChild;
+      row.querySelector(".host-name").innerText = host;
+      row.querySelector(".request-count").innerText = data.requests.toLocaleString();
+      row.querySelector(".error-count").innerText = data.errors.toLocaleString();
+      const errorRate = (data.requests > 0 ? data.errors / data.requests : 0);
+      row.querySelector(".error-rate").innerText = errorRate.toLocaleString(navigator.language, {style: "percent", minimumFractionDigits: 2});
+      row.querySelector(".request-time").innerText = Math.round(data.requests > 0 ? data.time / data.requests : 0).toLocaleString() + 'ms';
       tbody.append(row);
     });
   }
@@ -847,6 +877,15 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.getElementById("show-host-summaries").addEventListener("click", (event) => {
+    event.target.style.display = "none";
+    callAPI("hosts", currentParams, "details-loading-spinner", (data) => {
+      hostSummaryData = data;
+      document.getElementById("host-summaries").style.display = "block";
+      showHostSummaries();
+    });
+  });
+
   document.getElementById("download-data").addEventListener("click", (event) => {
     const link = document.createElement("a");
     const blob = new Blob([generateCSV()],{type: "text/csv; charset=utf-8;"});
@@ -894,7 +933,10 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomGraphsEnabled = true;
     window.removeEventListener('mouseover', onFirstHover, false);
     document.querySelectorAll(".zoomable-chart").forEach((div) => {
-      Plotly.relayout(div, {"xaxis.fixedrange": false});
+      try {
+        Plotly.relayout(div, {"xaxis.fixedrange": false});
+      } catch(e) {
+      }
     });
   }, false);
 
@@ -902,6 +944,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let metricData = null;
   let errorData = null;
   let actionData = null;
+  let hostSummaryData = null;
   let liveUpdateId = null;
   let currentParams = null;
   let zoomGraphsEnabled = false;

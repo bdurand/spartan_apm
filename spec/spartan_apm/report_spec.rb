@@ -210,6 +210,18 @@ describe SpartanAPM::Report, freeze_time: true do
     end
   end
 
+  describe "host_summaries" do
+    it "should get summary data for all hosts used" do
+      expect(SpartanAPM::Report.new(app, start_time, end_time).host_summaries).to eq({
+        "host_1" => {errors: 5, requests: 31, time: 3495},
+        "host_2" => {errors: 0, requests: 11, time: 1080}
+      })
+      expect(SpartanAPM::Report.new(app, end_time, end_time).host_summaries).to eq({
+        "host_1" => {errors: 3, requests: 12, time: 1365}
+      })
+    end
+  end
+
   describe "name" do
     it "should get the list of the names used" do
       expect(SpartanAPM::Report.new(app, start_time, end_time).component_names).to match_array ["app", "database"]

@@ -35,6 +35,8 @@ module SpartanAPM
             response = json_response(ApiRequest.new(request).errors)
           when "/actions"
             response = json_response(ApiRequest.new(request).actions)
+          when "/hosts"
+            response = json_response(ApiRequest.new(request).hosts)
           else
             if app_path.start_with?("/assets/")
               response = asset_response(app_path.sub("/assets/", ""))

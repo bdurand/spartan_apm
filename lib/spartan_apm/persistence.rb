@@ -402,13 +402,22 @@ module SpartanAPM
 
     def report_info(time_range, action: nil, host: nil)
       metrics = []
-      hosts = Set.new
-      read_range(time_range, action, host) do |bucket, metric_data, bucket_hosts|
+      host_summaries = {}
+      read_range(time_range, action, host) do |bucket, metric_data, bucket_host_data|
         metric = metric_from_values(bucket, metric_data)
         metrics << metric if metric
-        bucket_hosts.each { |h| hosts.add(h) }
+        bucket_host_data.each do |hostname, host_data|
+          host_summary = host_summaries[hostname]
+          if host_summary
+            host_summary[:requests] += host_data[:requests]
+            host_summary[:time] += host_data[:time]
+            host_summary[:errors] += host_data[:errors]
+          else
+            host_summaries[hostname] = host_data
+          end
+        end
       end
-      [metrics, hosts.to_a]
+      [metrics, host_summaries]
     end
 
     def metrics(time_range, action: nil, host: nil)
@@ -613,10 +622,9 @@ module SpartanAPM
 
     def read_range(time_range, action, host)
       each_bucket(time_range) do |bucket|
-        hosts = Set.new
+        host_summaries = {}
         combined_data = {}
         read_host_data(bucket, action, host) do |hostname, data|
-          hosts << hostname
           data.each do |name, values|
             combined_values = combined_data[name]
             unless combined_values
@@ -624,11 +632,22 @@ module SpartanAPM
               combined_data[name] = combined_values
             end
             combined_values.concat(values)
+
+            if name == ALL_COMPONENTS
+              host_summary = host_summaries[hostname]
+              unless host_summary
+                host_summary = {requests: 0, errors: 0, time: 0}
+                host_summaries[hostname] = host_summary
+              end
+              host_summary[:requests] += values.sum { |vals| vals[0] }
+              host_summary[:time] += values.sum { |vals| vals[1] }
+              host_summary[:errors] += values.sum { |vals| vals[5] }
+            end
           end
         end
 
         unless combined_data.empty?
-          yield(bucket, combined_data, hosts)
+          yield(bucket, combined_data, host_summaries)
         end
       end
     end
