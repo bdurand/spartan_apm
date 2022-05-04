@@ -276,12 +276,13 @@ module SpartanAPM
       end
     end
 
-    # Set the host name for the current process. Defaults to the system host name.
+    # Set the host name for the current process. Defaults to the value in the HOSTNAME
+    # environment variable or system host name if that is not set.
     attr_writer :host
 
     # @return The host name.
     def host
-      @host ||= Socket.gethostname
+      @host ||= ENV.fetch("HOSTNAME", Socket.gethostname)
     end
 
     # Set the Redis instance to use for storing metrics. This can be either a Redis
