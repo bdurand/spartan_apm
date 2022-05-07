@@ -42,6 +42,10 @@ document.addEventListener("DOMContentLoaded", () => {
       updateWindowLocation();
     }
 
+    if (pageLoaded) {
+      window.removeEventListener('mouseover', onFirstHover, false);
+    }
+
     const selectedHost = param("host");;
 
     document.getElementById("show-error-details").style.display = (selectedHost || aggregated ? "none" : null);
@@ -162,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Hide or show the time form field based on the value of the live checkbox.
-  function updateDisplayOfLiveOrTime(liveUpdated) {
+  function updateDisplayOfLiveOrTime() {
     const minutes = parseInt(selectedValue(document.getElementById("minutes")), 10);
     const liveCheckboxContainer = document.getElementById("live-checkbox");
     const liveCheckbox = document.getElementById("live");
@@ -191,13 +195,6 @@ document.addEventListener("DOMContentLoaded", () => {
           mobileTimeInput.style.display = null;
         }
         updateChartsBtn.style.display = null;
-        if (liveUpdated) {
-          if (metricData && metricData.times && metricData.times.length > 0) {
-            setTime(metricData.times[0])
-          } else {
-            timeInput.value = "";
-          }
-        }
       }
     }
   }
@@ -626,8 +623,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     minutes.selectedIndex = foundIndex;
     removeCustomMinutes();
-    select2Menus.minutes.update();
-    setSelect2Value("minutes");
   }
 
   function removeCustomMinutes() {
@@ -636,6 +631,8 @@ document.addEventListener("DOMContentLoaded", () => {
         element.remove();
       }
     });
+    select2Menus.minutes.update();
+    setSelect2Value("minutes");
   }
 
   // Pad a number with the specified number of zeros.
@@ -805,6 +802,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("body").dataset["authenticationUrl"];
   }
 
+  // Detect non-touch device so we can turn on drag to zoom. This is not enabled on touch
+  // devices because it makes scrolling down the page nearly impossible.
+  function onFirstHover() {
+    zoomGraphsEnabled = true;
+    window.removeEventListener('mouseover', onFirstHover, false);
+    document.querySelectorAll(".zoomable-chart").forEach((div) => {
+      try {
+        Plotly.relayout(div, {"xaxis.fixedrange": false});
+      } catch(e) {
+      }
+    });
+  }
+
   // Add event listeners.
   document.getElementById("update-charts").addEventListener("click", (event) => {
     updateCharts();
@@ -829,26 +839,33 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("action").selectedIndex = 0;
     updateCharts();
   });
+
   document.getElementById("app").addEventListener("change", () => {
     document.getElementById("host").selectedIndex = 0;
     document.getElementById("action").selectedIndex = 0;
     updateCharts();
   });
+
   document.getElementById("host").addEventListener("change", () => {
     updateCharts();
   });
+
   document.getElementById("action").addEventListener("change", () => {
     updateCharts();
   });
+
   document.getElementById("time").addEventListener("change", () => {
     updateCharts();
   });
+
   document.getElementById("live").addEventListener("change", () => {
-    updateDisplayOfLiveOrTime(true);
+    setTime(null);
+    updateDisplayOfLiveOrTime();
     updateCharts();
   });
+
   document.getElementById("minutes").addEventListener("change", () => {
-    updateDisplayOfLiveOrTime(false);
+    updateDisplayOfLiveOrTime();
     removeCustomMinutes();
     updateCharts();
   });
@@ -856,6 +873,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("measurement").addEventListener("change", (event) => {
     updateWindowLocation();
     plotRequestTime();
+  });
+
+  document.getElementById("clear-time").addEventListener("click", () => {
+    setTime(null);
+    updateCharts();
   });
 
   document.getElementById("show-error-details").addEventListener("click", (event) => {
@@ -909,6 +931,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function initializeSettings() {
     // Set up default values from the current page URL.
+    const timeParam = param("time");
     setSelectedValue("env");
     setSelectedValue("app");
     setSelectedValue("host");
@@ -919,26 +942,21 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("time").value = "";
       document.getElementById("time").style.display = "none";
     } else {
-      setSelectedValue("time");
+      if (timeParam) {
+        const startTime = Date.parse(timeParam);
+        setTime(new Date(startTime));
+      }
     }
     setSelectedValue("measurement");
-    updateDisplayOfLiveOrTime(false);
+    updateDisplayOfLiveOrTime();
     updateCharts(false);
+    pageLoaded = true;
   }
 
   window.addEventListener("popstate", initializeSettings);
 
   // Enable zooming into graphs only on non touch devices
-  window.addEventListener('mouseover', function onFirstHover() {
-    zoomGraphsEnabled = true;
-    window.removeEventListener('mouseover', onFirstHover, false);
-    document.querySelectorAll(".zoomable-chart").forEach((div) => {
-      try {
-        Plotly.relayout(div, {"xaxis.fixedrange": false});
-      } catch(e) {
-      }
-    });
-  }, false);
+  window.addEventListener('mouseover', onFirstHover, false);
 
   // Initialize the application
   let metricData = null;
@@ -948,6 +966,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let liveUpdateId = null;
   let currentParams = null;
   let zoomGraphsEnabled = false;
+  let pageLoaded = false;
 
   const select2Menus = {}
   document.querySelectorAll("select").forEach((select) => {
