@@ -256,7 +256,7 @@ select {
 
 .error-class-name {
   font-size: 0.9rem;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   width: 40%;
 }
 
@@ -268,7 +268,7 @@ select {
   font-family: monospace;
   font-size: 0.9rem;
   width: 60%;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
 }
 
 .backtrace-line {
