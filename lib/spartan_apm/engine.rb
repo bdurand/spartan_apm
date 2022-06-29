@@ -17,18 +17,18 @@ module SpartanAPM
           end
           # rubocop:enable Lint/RescueException
         end
+      end
 
-        if defined?(Sidekiq) && Sidekiq.server?
-          Sidekiq.configure_server do |config|
-            config.server_middleware do |chain|
-              chain.prepend SpartanAPM::Middleware::Sidekiq::StartMiddleware
-              chain.add SpartanAPM::Middleware::Sidekiq::EndMiddleware
-            end
+      app.config.middleware.insert(0, SpartanAPM::Middleware::Rack::StartMiddleware)
+      app.config.middleware.use(SpartanAPM::Middleware::Rack::EndMiddleware)
+
+      if defined?(Sidekiq) && Sidekiq.server?
+        Sidekiq.configure_server do |config|
+          config.server_middleware do |chain|
+            chain.prepend SpartanAPM::Middleware::Sidekiq::StartMiddleware
+            chain.add SpartanAPM::Middleware::Sidekiq::EndMiddleware
           end
         end
-
-        app.config.middleware.insert(0, SpartanAPM::Middleware::Rack::StartMiddleware)
-        app.config.middleware.use(SpartanAPM::Middleware::Rack::EndMiddleware)
       end
     end
 
