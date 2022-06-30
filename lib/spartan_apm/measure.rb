@@ -114,7 +114,7 @@ module SpartanAPM
       end
 
       def log_storage_error(error)
-        message = "SpartanAPM: error storing measures: #{error.inspect}\n#{error.backtrace.join("\n")}"
+        message = "SpartanAPM error storing measures: #{error.inspect}\n#{error.backtrace.join("\n")}"
         if SpartanAPM.logger
           SpartanAPM.logger.error(message)
         else
