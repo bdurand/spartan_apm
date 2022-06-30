@@ -10,7 +10,7 @@ module SpartanAPM
         end
 
         def call(env)
-          if SpartanAPM.ignore_request?("web", env["PATH_INFO"])
+          if SpartanAPM.ignore_request?(Rack.app_name, env["PATH_INFO"])
             @app.call(env)
           else
             start_time = Time.now.to_f
@@ -19,7 +19,7 @@ module SpartanAPM
             # between the two middlewares took to execute.
             env["spartan_apm.middleware_start_time"] = start_time
 
-            SpartanAPM.measure("web") do
+            SpartanAPM.measure(Rack.app_name) do
               begin
                 @app.call(env)
               ensure

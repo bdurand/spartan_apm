@@ -6,7 +6,7 @@ module SpartanAPM
       # Middleware that should be added to the start of the start of the middleware chain.
       class StartMiddleware
         def call(worker, msg, queue, &block)
-          if SpartanAPM.ignore_request?("sidekiq", worker.class.name)
+          if SpartanAPM.ignore_request?(Sidekiq.app_name, worker.class.name)
             yield
           else
             start_time = Time.now.to_f
@@ -15,7 +15,7 @@ module SpartanAPM
             # between the two middlewares took to execute.
             msg["spartan_apm.middleware_start_time"] = start_time
 
-            SpartanAPM.measure("sidekiq", worker.class.name) do
+            SpartanAPM.measure(Sidekiq.app_name, worker.class.name) do
               begin
                 yield
               ensure
