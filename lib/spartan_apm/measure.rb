@@ -33,12 +33,9 @@ module SpartanAPM
               @error_cache = {}
             end
           end
+
           if persist_measures && !persist_measures.empty?
-            if SpartanAPM.persist_asynchronously?
-              Thread.new { Persistence.store!(last_bucket, persist_measures) }
-            else
-              Persistence.store!(last_bucket, persist_measures)
-            end
+            store_measures(last_bucket, persist_measures)
           end
         end
 
@@ -97,6 +94,33 @@ module SpartanAPM
       end
 
       attr_reader :string_cache
+
+      private
+
+      def store_measures(last_bucket, measures)
+        if SpartanAPM.persist_asynchronously?
+          Thread.new do
+            Persistence.store!(last_bucket, measures)
+          rescue => e
+            log_storage_error(e)
+          end
+        else
+          begin
+            Persistence.store!(last_bucket, measures)
+          rescue => e
+            log_storage_error(e)
+          end
+        end
+      end
+
+      def log_storage_error(error)
+        message = "SpartanAPM: error storing measures: #{error.inspect}\n#{error.backtrace.join("\n")}"
+        if SpartanAPM.logger
+          SpartanAPM.logger.error(message)
+        else
+          warn message
+        end
+      end
     end
 
     def initialize(app, action = nil)
