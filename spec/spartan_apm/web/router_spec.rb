@@ -17,7 +17,7 @@ describe SpartanAPM::Web::Router, freeze_time: true do
       app = SpartanAPM::Web::Router.new
       status, headers, body = app.call({"PATH_INFO" => "/", "rack.input" => ""})
       expect(status).to eq 200
-      expect(headers["Content-Type"]).to eq "text/html; charset=utf-8"
+      expect(headers["content-type"]).to eq "text/html; charset=utf-8"
       expect(body.join).to include "<title>SpartanAPM</title>"
     ensure
       SpartanAPM::Persistence.new("web").clear!(time)
@@ -30,7 +30,7 @@ describe SpartanAPM::Web::Router, freeze_time: true do
       app = SpartanAPM::Web::Router.new
       status, headers, body = app.call({"PATH_INFO" => "/metrics", "rack.input" => ""})
       expect(status).to eq 200
-      expect(headers["Content-Type"]).to eq "application/json; charset=utf-8"
+      expect(headers["content-type"]).to eq "application/json; charset=utf-8"
     ensure
       SpartanAPM::Persistence.new("web").clear!(time)
     end
@@ -42,7 +42,7 @@ describe SpartanAPM::Web::Router, freeze_time: true do
       app = SpartanAPM::Web::Router.new
       status, headers, body = app.call({"PATH_INFO" => "/actions", "rack.input" => ""})
       expect(status).to eq 200
-      expect(headers["Content-Type"]).to eq "application/json; charset=utf-8"
+      expect(headers["content-type"]).to eq "application/json; charset=utf-8"
     ensure
       SpartanAPM::Persistence.new("web").clear!(time)
     end
@@ -54,7 +54,7 @@ describe SpartanAPM::Web::Router, freeze_time: true do
       app = SpartanAPM::Web::Router.new
       status, headers, body = app.call({"PATH_INFO" => "/errors", "rack.input" => ""})
       expect(status).to eq 200
-      expect(headers["Content-Type"]).to eq "application/json; charset=utf-8"
+      expect(headers["content-type"]).to eq "application/json; charset=utf-8"
     ensure
       SpartanAPM::Persistence.new("web").clear!(time)
     end
@@ -69,7 +69,7 @@ describe SpartanAPM::Web::Router, freeze_time: true do
       expect(response).to eq [204, {}, []]
       status, headers, body = app.call({"HTTP_HOST" => "apm.example.com", "PATH_INFO" => "/apm", "HTTPS" => "on", "QUERY_STRING" => "app=web", "rack.input" => ""})
       expect(status).to eq 302
-      expect(headers).to eq({"Location" => "https://apm.example.com/apm/?app=web"})
+      expect(headers).to eq({"location" => "https://apm.example.com/apm/?app=web"})
       status, headers, body = app.call({"HTTP_HOST" => "apm.example.com", "PATH_INFO" => "/apm/", "rack.input" => ""})
       expect(status).to eq 200
     ensure

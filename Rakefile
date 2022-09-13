@@ -28,6 +28,8 @@ rescue LoadError
   warn "You must install rspec to run the spec rake tasks"
 end
 
+require "standard/rake"
+
 desc "run the specs using appraisal"
 task :appraisals do
   exec "bundle exec appraisal rake spec"

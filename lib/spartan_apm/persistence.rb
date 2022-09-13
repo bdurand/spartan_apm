@@ -382,7 +382,7 @@ module SpartanAPM
         attempts = 0
         redis = SpartanAPM.redis
         begin
-          redis.evalsha(script_sha, keys, args)
+          redis.evalsha(script_sha, Array(keys).collect(&:to_s), Array(args).collect(&:to_s))
         rescue Redis::CommandError => e
           if e.message.include?("NOSCRIPT") && attempts < 2
             attempts += 1

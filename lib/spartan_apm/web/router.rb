@@ -23,10 +23,10 @@ module SpartanAPM
           request = Rack::Request.new(env)
           case app_path
           when ""
-            response = [302, {"Location" => root_url(request)}, []]
+            response = [302, {"location" => root_url(request)}, []]
           when "/"
             body = Helpers.new(request).render("index.html.erb")
-            response = [200, {"Content-Type" => "text/html; charset=utf-8"}, [body]]
+            response = [200, {"content-type" => "text/html; charset=utf-8", "cache-control" => "no-cache"}, [body]]
           when "/metrics"
             response = json_response(ApiRequest.new(request).metrics)
           when "/live_metrics"
@@ -56,19 +56,19 @@ module SpartanAPM
       private
 
       def not_found_response
-        [404, {"Content-Type" => "text/plain"}, ["Not found"]]
+        [404, {"content-type" => "text/plain"}, ["Not found"]]
       end
 
       def json_response(result)
-        [200, {"Content-Type" => "application/json; charset=utf-8"}, [JSON.dump(result)]]
+        [200, {"content-type" => "application/json; charset=utf-8", "cache-control" => "no-cache"}, [JSON.dump(result)]]
       end
 
       def asset_response(asset_path)
         file_path = File.expand_path(File.join(ASSET_ROOT_DIR, asset_path.split("/")))
         return nil unless file_path.start_with?(ASSET_ROOT_DIR) && File.exist?(file_path)
         data = File.read(file_path)
-        headers = {"Content-Type" => mime_type(file_path)}
-        headers["Cache-Control"] = "max-age=604800" if asset_path.match?(/\d\./)
+        headers = {"content-type" => mime_type(file_path)}
+        headers["cache-control"] = "max-age=604800" if asset_path.match?(/\d\./)
         [200, headers, [data]]
       end
 

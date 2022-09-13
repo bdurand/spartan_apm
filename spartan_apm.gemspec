@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name = "spartan_apm"
-  spec.version = File.read(File.expand_path("../VERSION", __FILE__)).strip
+  spec.version = File.read(File.expand_path("VERSION", __dir__)).strip
   spec.authors = ["Brian Durand"]
   spec.email = ["bbdurand@gmail.com"]
 

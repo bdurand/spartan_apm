@@ -23,4 +23,5 @@ group :test do
   gem "simplecov", "~> 0.21", require: false
 
   gem "puma"
+  gem "rackup"
 end
