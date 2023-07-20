@@ -141,14 +141,14 @@ module SpartanAPM
       @app = self.class.string_cache.fetch(value)
     end
 
-    # Capture the timing for a component. See SpartanAPM#capture for more info.
+    # Capture the timing for a component. See SpartanAPM.capture for more info.
     def capture(name, exclusive: false)
       name = name.to_sym
       if @current_exclusive
         # Already capturing from within an exclusive block, so don't interrupt that capture.
         yield
       else
-        start_time = Time.now
+        start_time = SpartanAPM.clock_time
         restore_name = @current_name
         if restore_name
           @timers[restore_name] += start_time - @current_start_time
@@ -159,7 +159,7 @@ module SpartanAPM
         begin
           yield
         ensure
-          end_time = Time.now
+          end_time = SpartanAPM.clock_time
           @timers[name] += end_time - @current_start_time
           @counts[name] += 1
           if restore_name

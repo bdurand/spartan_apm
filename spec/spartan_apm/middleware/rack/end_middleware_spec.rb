@@ -13,7 +13,7 @@ describe SpartanAPM::Middleware::Rack::EndMiddleware, freeze_time: true do
 
   it "should capture middleware time" do
     SpartanAPM.measure("web", "test") do
-      middleware.call("spartan_apm.middleware_start_time" => (Time.now - 0.5).to_f)
+      middleware.call("spartan_apm.middleware_start_time" => (SpartanAPM.clock_time - 0.5).to_f)
     end
     measure = SpartanAPM::Measure.current_measures.first
     expect(measure.timers[:middleware].round(3)).to eq 0.5

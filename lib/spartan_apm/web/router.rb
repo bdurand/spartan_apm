@@ -9,8 +9,7 @@ module SpartanAPM
     class Router
       ASSET_ROOT_DIR = File.expand_path(File.join(__dir__, "..", "..", "..", "app", "assets"))
 
-      def initialize(app = nil, root_path = "")
-        @app = app
+      def initialize(root_path = "")
         @root_path = root_path.chomp("/")
         @root_prefix = "#{@root_path}/"
       end
@@ -44,13 +43,7 @@ module SpartanAPM
           end
         end
 
-        if response
-          response
-        elsif @app.nil?
-          not_found_response
-        else
-          @app.call(env)
-        end
+        response || not_found_response
       end
 
       private
@@ -79,6 +72,10 @@ module SpartanAPM
           "text/css"
         when "js"
           "application/javascript"
+        when "svg"
+          "image/svg+xml; charset=utf-8"
+        when "png"
+          "image/png"
         else
           "application/octet-stream"
         end

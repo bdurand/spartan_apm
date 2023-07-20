@@ -174,9 +174,9 @@ module SpartanAPM
     # Clean an error backtrace by passing it to the backtrace cleaner if one was set.
     def clean_backtrace(backtrace)
       if defined?(@backtrace_cleaner) && @backtrace_cleaner && backtrace
-        cleaned = Array(@backtrace_cleaner.call(backtrace[1, backtrace.size]))
+        cleaned = Array(@backtrace_cleaner.call(backtrace))
         # Alway make sure the top line of the trace is included.
-        cleaned.unshift(backtrace[0])
+        cleaned.unshift(backtrace.first) unless cleaned.first == backtrace.first
         cleaned
       else
         backtrace
@@ -203,7 +203,7 @@ module SpartanAPM
     # @param app [String, Symbol] The name of the app that is collecting metrics.
     # @param action [String, Symbol] The name of the action that is being performed.
     def measure(app, action = nil)
-      if Thread.current[:spartan_apm_measure].nil? && (sample_rate >= 1.0 || rand < sample_rate)
+      if Thread.current[:spartan_apm_measure].nil?
         measure = Measure.new(app, action)
         Thread.current[:spartan_apm_measure] = measure
         # rubocop:disable Lint/RescueException
@@ -214,7 +214,9 @@ module SpartanAPM
           raise
         ensure
           Thread.current[:spartan_apm_measure] = nil
-          measure.record!
+          if measure.error || sample_rate >= 1.0 || rand < sample_rate
+            measure.record!
+          end
         end
         # rubocop:enable Lint/RescueException
       else
@@ -353,7 +355,7 @@ module SpartanAPM
     # Get the time for the specified bucket.
     # @return [Time]
     def bucket_time(bucket)
-      Time.at(bucket * 60.0)
+      Time.at(bucket * 60.0).utc
     end
 
     # @api private
@@ -369,6 +371,12 @@ module SpartanAPM
     # Used for testing for disabling asynchronous metric persistence.
     def persist_asynchronously=(value)
       @persist_asynchronously = !!value
+    end
+
+    # Helper method to get the monotonic clock time.
+    # @api private
+    def clock_time
+      Process.clock_gettime(Process::CLOCK_MONOTONIC)
     end
 
     private

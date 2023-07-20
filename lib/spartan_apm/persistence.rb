@@ -98,7 +98,7 @@ module SpartanAPM
       end
 
       def store_measure_stats(bucket, measures)
-        start_time = Time.now
+        start_time = SpartanAPM.clock_time
         action_values = {}
         measures.each do |measure|
           next if measure.timers.empty?
@@ -114,7 +114,7 @@ module SpartanAPM
           store_metric(bucket, app, action, SpartanAPM.host, data)
         end
 
-        SpartanAPM.logger&.info("SpartanAPM stored #{action_values.size} stats in #{((Time.now - start_time) * 1000).round}ms")
+        SpartanAPM.logger&.info("SpartanAPM stored #{action_values.size} stats in #{((SpartanAPM.clock_time - start_time) * 1000).round}ms")
       end
 
       def aggregate_values(map, key, value)
@@ -167,7 +167,7 @@ module SpartanAPM
       end
 
       def store_measure_errors(bucket, measures)
-        start_time = Time.now
+        start_time = SpartanAPM.clock_time
         errors = {}
         measures.each do |measure|
           next unless measure.error
@@ -193,7 +193,7 @@ module SpartanAPM
           end
         end
 
-        SpartanAPM.logger&.info("SpartanAPM stored #{errors.size} errors in #{((Time.now - start_time) * 1000).round}ms")
+        SpartanAPM.logger&.info("SpartanAPM stored #{errors.size} errors in #{((SpartanAPM.clock_time - start_time) * 1000).round}ms")
       end
 
       def store_error(bucket, app, class_name, message, backtrace, count)
@@ -329,10 +329,10 @@ module SpartanAPM
         {
           day: day,
           components: aggregated_components,
-          avg: (count > 0 ? (avgs.sum.to_f / count).round : 0),
-          p50: (count > 0 ? (p50s.sum.to_f / count).round : 0),
-          p90: (count > 0 ? (p90s.sum.to_f / count).round : 0),
-          p99: (count > 0 ? (p99s.sum.to_f / count).round : 0),
+          avg: ((count > 0) ? (avgs.sum.to_f / count).round : 0),
+          p50: ((count > 0) ? (p50s.sum.to_f / count).round : 0),
+          p90: ((count > 0) ? (p90s.sum.to_f / count).round : 0),
+          p99: ((count > 0) ? (p99s.sum.to_f / count).round : 0),
           error_count: error_count,
           count: count
         }
@@ -471,7 +471,7 @@ module SpartanAPM
       end
       actions = {}
       action_times.each do |action, time_spent|
-        actions[action] = (total_time > 0 ? time_spent / total_time : 0.0)
+        actions[action] = ((total_time > 0) ? time_spent / total_time : 0.0)
       end
       actions.sort_by { |action, time_spent| -time_spent }.take(limit)
     end
@@ -664,7 +664,7 @@ module SpartanAPM
     end
 
     def read_aggregated_metrics(unit, time_range)
-      key = (unit == :hour ? hours_key : days_key)
+      key = ((unit == :hour) ? hours_key : days_key)
       start_time = Time.at((time_range.respond_to?(:first) ? time_range.first : time_range).to_f)
       end_time = Time.at((time_range.respond_to?(:last) ? time_range.last : time_range).to_f)
 
@@ -678,7 +678,7 @@ module SpartanAPM
 
       SpartanAPM.redis.zrangebyscore(key, start_time.to_f, end_time.to_f).collect do |raw_data|
         data = MessagePack.load(raw_data)
-        time = Time.at(data[unit.to_s])
+        time = Time.at(data[unit.to_s]).utc
         metric = Metric.new(time)
         metric.count = data["count"]
         metric.error_count = data["error_count"]

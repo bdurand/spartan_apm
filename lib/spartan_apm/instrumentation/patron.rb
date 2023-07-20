@@ -2,11 +2,11 @@
 
 module SpartanAPM
   module Instrumentation
-    class Curb < Base
+    class Patron < Base
       def initialize
-        @klass = ::Curl::Easy if defined?(::Curl::Easy)
+        @klass = ::Patron::Session if defined?(::Patron::Session)
         @name = :http
-        @methods = [:http]
+        @methods = [:request]
       end
     end
   end

@@ -6,7 +6,7 @@ module SpartanAPM
       # Middleware that should be added of the end of the middleware chain.
       class EndMiddleware
         def call(worker, msg, queue, &block)
-          start_time = Time.now.to_f
+          start_time = SpartanAPM.clock_time
           SpartanAPM.capture(:app) do
             begin
               yield

@@ -2,11 +2,11 @@
 
 module SpartanAPM
   module Instrumentation
-    class Curb < Base
+    class EthonMulti < Base
       def initialize
-        @klass = ::Curl::Easy if defined?(::Curl::Easy)
+        @klass = ::Ethon::Multi if defined?(::Ethon::Multi)
         @name = :http
-        @methods = [:http]
+        @methods = [:perform]
       end
     end
   end

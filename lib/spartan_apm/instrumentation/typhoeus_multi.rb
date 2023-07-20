@@ -2,11 +2,11 @@
 
 module SpartanAPM
   module Instrumentation
-    class Curb < Base
+    class TyphoeusMulti < Base
       def initialize
-        @klass = ::Curl::Easy if defined?(::Curl::Easy)
+        @klass = ::Typhoeus::Hydra if defined?(::Typhoeus::Hydra)
         @name = :http
-        @methods = [:http]
+        @methods = [:run]
       end
     end
   end

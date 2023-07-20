@@ -1,4 +1,4 @@
-# Spartan APM
+# Spartan APM :construction:
 
 [![Continuous Integration](https://github.com/bdurand/spartan_apm/actions/workflows/continuous_integration.yml/badge.svg)](https://github.com/bdurand/spartan_apm/actions/workflows/continuous_integration.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
@@ -14,11 +14,13 @@ However, if you need something simple and free that just works out of the box, t
 3. your full featured APM charges a per seat license but you want to expose some performance information to your entire organization; for instance if you want your P1 support personell to have access to current performance, but only developers need full access to all your tools
 4. you want to include performance data in custom monitors from within your application
 
-## The Tool
+## Usage
 
-## Instrumentation
+### The Tool
 
-## Performance
+### Instrumentation
+
+### Performance
 
 ## Installation
 

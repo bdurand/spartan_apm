@@ -19,7 +19,7 @@ describe SpartanAPM::Middleware::Rack::StartMiddleware, freeze_time: true do
   it "should persist the start time to the environment" do
     env = {}
     middleware.call(env)
-    expect(env["spartan_apm.middleware_start_time"]).to eq Time.now.to_f
+    expect(SpartanAPM.clock_time - env["spartan_apm.middleware_start_time"]).to be < 0.1
   end
 
   it "should capture the queue time if the HTTP_X_REQUEST_START header is specified in seconds" do

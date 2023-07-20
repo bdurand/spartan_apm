@@ -9,7 +9,7 @@ describe SpartanAPM::Middleware::Sidekiq::StartMiddleware, freeze_time: true do
     msg = {}
     result = middleware.call(Object.new, msg, "queue") { :foobar }
     expect(result).to eq :foobar
-    expect(msg["spartan_apm.middleware_start_time"]).to eq Time.now.to_f
+    expect(msg["spartan_apm.middleware_start_time"]).to eq SpartanAPM.clock_time
   end
 
   it "should capture the queue time" do

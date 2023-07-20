@@ -10,7 +10,7 @@ module SpartanAPM
         end
 
         def call(env)
-          start_time = Time.now
+          start_time = SpartanAPM.clock_time
           SpartanAPM.capture(:app) do
             begin
               @app.call(env)

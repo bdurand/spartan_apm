@@ -106,7 +106,26 @@ describe SpartanAPM::Persistence do
       end
     end
 
-    it "should estimate the counts if the measures are being sampled"
+    it "should estimate the counts if the measures are being sampled", freeze_time: true do
+      time = Time.now
+      persistence = SpartanAPM::Persistence.new("test")
+      SpartanAPM.sample_rate = 0.1
+      begin
+        1000.times do
+          SpartanAPM.measure("test", "test") do
+            SpartanAPM.capture("test") { true }
+          end
+        end
+        bucket = SpartanAPM.bucket(time - 120)
+        SpartanAPM::Persistence.store!(bucket, SpartanAPM::Measure.current_measures)
+        metrics = persistence.metrics([time - 120, time], action: "test").first
+        expect(metrics.count).to be > 800
+        expect(metrics.count).to be < 1200
+      ensure
+        SpartanAPM.sample_rate = 1.0
+        persistence.clear!([time - 120, time])
+      end
+    end
 
     it "should store stats for the last hour", freeze_time: true do
       app = SpartanAPM::Persistence.new("app")

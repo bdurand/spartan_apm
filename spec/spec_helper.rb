@@ -42,4 +42,8 @@ RSpec.configure do |config|
       example.run
     end
   end
+
+  config.before(:each) do
+    allow(Process).to receive(:clock_gettime).with(Process::CLOCK_MONOTONIC) { Time.now.to_f - 1_000_000 }
+  end
 end

@@ -2,11 +2,11 @@
 
 module SpartanAPM
   module Instrumentation
-    class Curb < Base
+    class HTTPX < Base
       def initialize
-        @klass = ::Curl::Easy if defined?(::Curl::Easy)
+        @klass = ::HTTPX::Session if defined?(::HTTPX::Session)
         @name = :http
-        @methods = [:http]
+        @methods = [:send_requests]
       end
     end
   end

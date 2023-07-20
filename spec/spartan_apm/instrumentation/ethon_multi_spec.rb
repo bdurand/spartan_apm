@@ -2,9 +2,9 @@
 
 require_relative "../../spec_helper"
 
-describe SpartanAPM::Instrumentation::Typhoeus do
+describe SpartanAPM::Instrumentation::EthonMulti do
   it "should be valid" do
-    instance = SpartanAPM::Instrumentation::Typhoeus.new
+    instance = SpartanAPM::Instrumentation::EthonMulti.new
     expect(instance.klass).to_not eq nil
     expect(instance.name).to eq :http
     expect(instance).to be_valid

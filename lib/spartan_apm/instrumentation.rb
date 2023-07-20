@@ -13,12 +13,17 @@ module SpartanAPM
         Curb.new.tap { |instance| instance.instrument! if instance.valid? }
         Dalli.new.tap { |instance| instance.instrument! if instance.valid? }
         Elasticsearch.new.tap { |instance| instance.instrument! if instance.valid? }
+        EthonEasy.new.tap { |instance| instance.instrument! if instance.valid? }
+        EthonMulti.new.tap { |instance| instance.instrument! if instance.valid? }
         Excon.new.tap { |instance| instance.instrument! if instance.valid? }
         HTTPClient.new.tap { |instance| instance.instrument! if instance.valid? }
         HTTP.new.tap { |instance| instance.instrument! if instance.valid? }
+        HTTPX.new.tap { |instance| instance.instrument! if instance.valid? }
         NetHTTP.new.tap { |instance| instance.instrument! if instance.valid? }
+        Patron.new.tap { |instance| instance.instrument! if instance.valid? }
         Redis.new.tap { |instance| instance.instrument! if instance.valid? }
-        Typhoeus.new.tap { |instance| instance.instrument! if instance.valid? }
+        TyphoeusEasy.new.tap { |instance| instance.instrument! if instance.valid? }
+        TyphoeusMulti.new.tap { |instance| instance.instrument! if instance.valid? }
       end
 
       # Instrument a class by surrounding specified instance methods with capture blocks.
@@ -63,9 +68,14 @@ require_relative "instrumentation/cassandra"
 require_relative "instrumentation/curb"
 require_relative "instrumentation/dalli"
 require_relative "instrumentation/elasticsearch"
+require_relative "instrumentation/ethon_easy"
+require_relative "instrumentation/ethon_multi"
 require_relative "instrumentation/excon"
 require_relative "instrumentation/httpclient"
 require_relative "instrumentation/http"
+require_relative "instrumentation/httpx"
 require_relative "instrumentation/net_http"
+require_relative "instrumentation/patron"
 require_relative "instrumentation/redis"
-require_relative "instrumentation/typhoeus"
+require_relative "instrumentation/typhoeus_easy"
+require_relative "instrumentation/typhoeus_multi"

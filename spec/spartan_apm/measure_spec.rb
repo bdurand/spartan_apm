@@ -42,8 +42,37 @@ describe SpartanAPM::Measure do
   end
 
   describe "sample rate" do
-    it "should only record a fraction of the requests if the sample rate is set"
+    it "should only record a fraction of the requests if the sample rate is set", freeze_time: true do
+      SpartanAPM.sample_rate = 0.1
+      begin
+        1000.times do
+          SpartanAPM.measure("test", "test") do
+            SpartanAPM.capture("test") { true }
+          end
+        end
 
-    it "should always record errors even if the sample rate is set"
+        expect(SpartanAPM::Measure.current_measures.size).to be > 0
+        expect(SpartanAPM::Measure.current_measures.size).to be < 1000
+      ensure
+        SpartanAPM.sample_rate = 1.0
+      end
+    end
+
+    it "should always record errors even if the sample rate is set", freeze_time: true do
+      SpartanAPM.sample_rate = 0.1
+      begin
+        100.times do
+          SpartanAPM.measure("test", "test") do
+            SpartanAPM.capture("test") { raise }
+          end
+        rescue
+          # do nothing
+        end
+
+        expect(SpartanAPM::Measure.current_measures.size).to eq 100
+      ensure
+        SpartanAPM.sample_rate = 1.0
+      end
+    end
   end
 end

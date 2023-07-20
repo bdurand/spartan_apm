@@ -10,9 +10,12 @@ group :test do
   gem "curb"
   gem "dalli"
   gem "elasticsearch"
+  gem "ethon"
   gem "excon"
   gem "http"
+  gem "httpx"
   gem "httpclient"
+  gem "patron"
   gem "typhoeus"
 
   gem "dotenv"

@@ -13,7 +13,7 @@ module SpartanAPM
 
             # This value is used in EndMiddleware to capture how long all the middleware
             # between the two middlewares took to execute.
-            msg["spartan_apm.middleware_start_time"] = start_time
+            msg["spartan_apm.middleware_start_time"] = SpartanAPM.clock_time
 
             SpartanAPM.measure(Sidekiq.app_name, worker.class.name) do
               begin

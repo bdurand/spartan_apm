@@ -2,9 +2,9 @@
 
 module SpartanAPM
   module Instrumentation
-    class Typhoeus < Base
+    class TyphoeusEasy < Base
       def initialize
-        @klass = ::Typhoeus::Hydra if defined?(::Typhoeus::Hydra)
+        @klass = ::Typhoeus::Request if defined?(::Typhoeus::Request)
         @name = :http
         @methods = [:run]
       end
