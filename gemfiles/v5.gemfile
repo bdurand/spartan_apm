@@ -10,9 +10,12 @@ group :test do
   gem "curb", "~> 1.0"
   gem "dalli"
   gem "elasticsearch", "~> 8.0"
+  gem "ethon"
   gem "excon", "~> 0.90"
   gem "http"
+  gem "httpx"
   gem "httpclient", "~> 2.8"
+  gem "patron"
   gem "typhoeus", "~> 1.4"
   gem "dotenv"
   gem "rspec", "~> 3.10"
@@ -20,6 +23,8 @@ group :test do
   gem "appraisal"
   gem "standard", "~> 1.0"
   gem "simplecov", "~> 0.21", require: false
+  gem "puma"
+  gem "rackup"
   gem "redis", "~> 4.0"
 end
 
